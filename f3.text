@@ -1,0 +1,200 @@
+IAM:
+
+check the permissions in iam users:
+1.AmazonEC2FullAccess
+2.AWSCodeCommitFullAccess
+3.IAMFullAccess
+4.AmazonS3FullAccess
+5.AWSCodeDeployFullAccess
+6.AdministratorAccess
+7.IAMUserChangePassword
+8.AWSCodeBuildAdminAccess
+
+create ec2 role---->AmazonEc2RoleForAwsCodeDeploy
+Role name:........
+
+create code deploy----->AmazonCodeDeployRole
+role name:.........
+////////////////////////////////////////////////////////////////
+
+EC2 :
+
+security groups -----> check the inbound rules 
+1.SSH --- anywhere ipv4
+2.Http ---anywhere ipv4
+3.Https---------anywhere ipv4
+4.All Trafic-------anywhere ipv4
+5.MysqlAurora ------anywhere ipv4
+6.customTCP-------port no:8100(ms port no)-----anywhere ipv4
+
+
+Create instance and give name:
+
+in step 3:
+auto-assign public-----enable
+IAM role ----EC2role
+user data:
+
+#!/bin/bash
+sudo yum update -y
+sudo yum install ruby -y
+sudo yum install wget -y
+sudo yum install httpd -y
+cd /home/ec2-user
+sudo wget https://aws-codedeploy-ap-south-1.s3.ap-south-1.amazonaws.com/latest/install
+sudo chmod +x ./install
+sudo ./install auto
+sudo service httpd start
+
+
+
+(((((Note:check your region and metion it))))))
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+RDS:
+
+create database
+standard 
+select MYSQL
+select free tier
+database instance name
+username
+password
+confirm password
+public access -yes
+in VPC security group
+1.add existing vpc security groups 
+2.availability zone---select 1a
+additional configiration-----database name
+create database
+
+after the creation of database copy the rds endpoint and open the Mysql workbench and paste the rds endpoint in hostname and enter ur credentials
+
+after the connectivity run the queries
+
+run the tablescripts given in microservice
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+S3:
+
+Create Bucket
+bucket name
+region
+uncheck the block all public access option
+and select the acknowledgement
+click on create bucket
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CODE COMMIT:
+
+create Repository
+give repository name
+click on create Repository
+
+note:if already done ignore it---Click on account id beside region on top right select the security credentials-------select aws credentials-----generate credentials and download it.
+
+click on clone url and select the https
+
+search gitbash and choose open from file location
+
+git clone clone url
+
+go to cDrive--->users---->name----->check for repository file---->open that microservices and add that files and also add remaining files.
+
+run this commands in gitbash which was already in use
+
+cd repositoryname
+
+git add *
+
+git config --global user.email "emailid"
+
+git config --global user.name "name"
+
+git commit -m "added source code"
+
+git push origin master
+
+open the code commit---->src---->main---->resources---->application.properties(( in appl.prop add the rds endpoint and port number and also add the rds username &password))
+spring.datasource.url=jdbc:mysql://.............endpoint url ............:portnumber/mysqldatabasename
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+spring.datasource.username=
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+CODE BUILD
+
+create build projects
+project name
+source---->aws code commit
+Repository name
+branch---->choose master
+environment:
+   os----->AmazonLinux2
+   Runtime---->standard
+   Image------>3.0
+   new service role
+artifacts---->choose amazon s3 next select your bucket name
+select artifacts package as Zip
+create build project 
+next click on start build
+       scrolldown and check the phase details 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CODE DEPLOY:
+
+create application
+give appl'n name
+select compute platform---->ec2/on permises
+
+create deployment group
+
+give deployment group name
+enter service role
+
+environment configuration 
+      select amazon EC2 instance
+      select key and value
+      uncheck the enable load balanace
+      click on create deployment group
+click on create deployment
+	revision location----->copy the s3 bucket public ip address
+        file type ----> .Zip
+        create deployment
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+CODE PIPELINE:
+
+create a pipeline
+give pipeline name
+rolename
+and click on next
+
+step 2:
+
+source provider--->aws code commit
+select repository name
+select branch name
+next
+
+
+step 3:
+
+select build provider as ----->aws code build
+select project name
+next
+
+
+step4:
+select provider as----->aws code deploy
+select appl'n name
+select deployment group
+create pipeline
+
+
+
+==================================================================THE END===========================================================================================

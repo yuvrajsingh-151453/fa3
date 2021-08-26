@@ -1,0 +1,125 @@
+User1:
+	link:-https://953871694740.signin.aws.amazon.com/console
+	username:- 16Aug_demo_fa3
+	password:-Yuveuser1997#
+
+User2:
+	link:- https://953871694740.signin.aws.amazon.com/console
+	username:- yuvrajparmar
+	password:- yuvraj123#
+
+
+codecommit:
+	username:-16Aug_demo_fa3-at-953871694740
+	password:-zjSZxotDT+xUI6Z/ehtHY/DqByiWofNO+THAo2wdxpk=
+
+###########################################################################################
+
+Ec2 instance script:
+
+#!/bin/bash
+sudo yum update -y
+sudo yum install ruby -y
+sudo yum install wget -y
+sudo yum install httpd -y
+cd /home/ec2-user
+sudo wget https://aws-codedeploy-ap-south-1.s3.ap-south-1.amazonaws.com/latest/install
+sudo chmod +x ./install
+sudo ./install auto
+sudo service httpd start
+
+###########################################################################################
+	
+install_dependencies:
+
+#!/bin/bash
+
+sudo yum install java-1.8.0-openjdk -y
+sudo yum install java-1.8.0-openjdk-deval -y 
+#sudo update-alternatives --config java  
+sudo alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+cd /opt
+sudo wget http://www.eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+sudo tar -xvzf ./apache-maven-3.6.3-bin.tar.gz
+cd  /etc/profile.d/
+sudo touch maven.sh
+sudo chmod 777 maven.sh 
+echo -e "export M2_HOME=/opt/apache-maven-3.6.3\nexport PATH=${M2_HOME}/bin:${PATH}" > maven.sh 
+source /etc/profile.d/maven.sh
+
+###########################################################################################
+
+start_server:
+
+#!/bin/bash
+cd /tmp/target
+sudo java -jar *.jar  > /dev/null 2> /dev/null < /dev/null &
+
+###########################################################################################
+
+appspec.yml
+
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /tmp/target
+    
+hooks:
+  BeforeInstall:
+    - location: install_dependencies
+      timeout: 300
+      runas: root
+  AfterInstall:
+    - location: start_server
+      timeout: 300
+      runas: root
+
+###########################################################################################
+
+buildspec.yml
+
+version: 0.2
+phases:
+       
+  #pre_build:
+    #commands:
+      # - command
+      # - command
+  build:
+    commands:
+       - echo Build started on `date`
+       - mvn test
+  post_build:
+    commands:
+       
+       - echo Build completed on `date`
+       - mvn package
+artifacts:
+  files:
+    #  - '**/*'
+     - start_server
+     - install_dependencies
+     - 'target/infytel-calldetails-0.0.1-SNAPSHOT.jar'
+     - 'appspec.yml'
+  discard-paths: yes 
+
+###########################################################################################
+
+putty sql:
+
+sudo yum update -y
+sudo yum install -y httpd24 php56 mysql55-server php56-mysqlnd
+service httpd start
+chkconfig httpd on
+groupadd www
+
+###########################################################################################
+
+git cmd:
+	git clone url
+	git add .
+	git commit -m "comment"
+	git push -u origin master
+
+
